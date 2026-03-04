@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Farewell Spin Wheel</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+margin:0;
+}
+
+h1{
+margin-top:20px;
+}
+
+#wheel-container{
+position:relative;
+width:520px;
+height:520px;
+margin:auto;
+margin-top:30px;
+}
+
+canvas{
+border-radius:50%;
+border:10px solid black;
+transition:transform 5s ease-out;
+}
+
+#pointer{
+position:absolute;
+top:-30px;
+left:50%;
+transform:translateX(-50%);
+font-size:40px;
+}
+
+#spinBtn{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+width:140px;
+height:140px;
+border-radius:50%;
+border:none;
+background:black;
+color:white;
+font-size:22px;
+cursor:pointer;
+}
+
+img{
+width:180px;
+height:180px;
+object-fit:cover;
+border-radius:50%;
+border:4px solid black;
+margin-top:20px;
+}
+
+#result{
+margin-top:30px;
+font-size:22px;
+font-weight:bold;
+max-width:800px;
+margin:auto;
+}
+
+footer{
+margin-top:40px;
+font-size:16px;
+}
+
+.confetti{
+position:fixed;
+width:10px;
+height:10px;
+top:-10px;
+animation:fall 3s linear forwards;
+}
+
+@keyframes fall{
+to{
+transform:translateY(100vh) rotate(720deg);
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🎓 Farewell Celebration 🎉</h1>
+<h3>UG Department of Mathematics</h3>
+
+<div id="wheel-container">
+
+<div id="pointer">⬇</div>
+
+<canvas id="wheel" width="500" height="500"></canvas>
+
+<button id="spinBtn" onclick="spin()">SPIN</button>
+
+</div>
+
+<div id="result"></div>
+
+<footer>
+
+UG Department of Mathematics  
+
+<br><br>
+
+Created by  
+<b>S. Sankareswaran</b>
+
+<br>
+
+B.Sc Mathematics
+
+</footer>
+
+<audio id="spinSound" src="spin.mp3"></audio>
+
+<script>
+
+let staff=[
+
+{name:"Dr. C. Parameswaran",photo:"images/parameswaran.jpg"},
+{name:"Mr. C. Jayaprakash",photo:"images/jayaprakash.jpg"},
+{name:"Dr. J. Kannan",photo:"images/kannan.jpg"},
+{name:"Dr. V. Sutha Devi",photo:"images/suthadevi.jpg"},
+{name:"Mr. R. Sivakumar",photo:"images/sivakumar.jpg"},
+{name:"Mrs. K. Kaleeswari",photo:"images/kaleeswari.jpg"},
+{name:"Dr. G. Sangeetha",photo:"images/sangeetha.jpg"},
+{name:"Dr. G. Narasimman",photo:"images/narasimman.jpg"},
+{name:"Dr. P. Gnanachandra",photo:"images/gnanachandra.jpg"},
+{name:"Dr. L. Jarina Banu",photo:"images/jarina.jpg"},
+{name:"Dr. G. Thirupathi",photo:"images/thirupathi.jpg"}
+
+];
+
+let questions=[
+
+"How did this teacher influence you?<br>இந்த ஆசிரியர் உங்களை எப்படி பாதித்தார்?",
+"What life lesson did you learn from this teacher?<br>இந்த ஆசிரியரிடமிருந்து நீங்கள் கற்ற வாழ்க்கைப் பாடம் என்ன?",
+"What makes this teacher special?<br>இந்த ஆசிரியர் உங்களுக்கு ஏன் சிறப்பு?",
+"What will you miss most about this teacher?<br>இந்த ஆசிரியரிடம் இருந்து நீங்கள் அதிகம் மிஸ் செய்யப்போகும் விஷயம் என்ன?",
+"What quality of this teacher do you admire most?<br>இந்த ஆசிரியரின் எந்த குணத்தை நீங்கள் அதிகம் விரும்புகிறீர்கள்?",
+"What advice from this teacher will stay in your life?<br>இந்த ஆசிரியரின் எந்த அறிவுரை உங்கள் வாழ்க்கையில் என்றும் இருக்கும்?",
+"What subject inspired you?<br>எந்த பாடப்பகுதி உங்களை அதிகம் ஊக்குவித்தது?",
+"What makes this teacher unforgettable?<br>இந்த ஆசிரியரை மறக்க முடியாதது என்ன?",
+"How did this teacher motivate you?<br>இந்த ஆசிரியர் உங்களை எப்படி ஊக்குவித்தார்?",
+"What is your best classroom memory?<br>மறக்க முடியாத வகுப்பு நினைவு என்ன?",
+"How did this teacher shape your future?<br>இந்த ஆசிரியர் உங்கள் எதிர்காலத்தை எப்படி வடிவமைத்தார்?",
+"What comes to mind when you think about this teacher?<br>இந்த ஆசிரியரை நினைத்தவுடன் உங்கள் மனதில் வரும் விஷயம் என்ன?",
+"How did this teacher make a difference in your life?<br>இந்த ஆசிரியர் உங்கள் வாழ்க்கையில் என்ன மாற்றம் கொண்டு வந்தார்?",
+"What is the funniest moment with this teacher?<br>இந்த ஆசிரியருடன் நடந்த மிகவும் நகைச்சுவையான தருணம் என்ன?",
+"What did you learn outside the classroom?<br>வகுப்பறைக்கு வெளியே நீங்கள் கற்ற விஷயம் என்ன?",
+"How did this teacher help you grow?<br>ஒரு மனிதராக வளர இந்த ஆசிரியர் எப்படி உதவினார்?",
+"What makes this teacher different?<br>இந்த ஆசிரியரை மற்ற ஆசிரியர்களிலிருந்து வேறுபடுத்துவது என்ன?",
+"What message would you give on farewell day?<br>Farewell நாளில் நீங்கள் சொல்ல விரும்பும் செய்தி என்ன?",
+"What advice from this teacher stayed with you?<br>இந்த ஆசிரியர் கொடுத்த மறக்க முடியாத அறிவுரை என்ன?",
+"How did this teacher build your confidence?<br>இந்த ஆசிரியர் உங்களுக்கு தன்னம்பிக்கை எப்படி கொடுத்தார்?",
+"What is your favorite moment in this class?<br>இந்த ஆசிரியரின் வகுப்பில் உங்கள் மிகவும் பிடித்த தருணம் என்ன?",
+"Thank this teacher in one sentence.<br>இந்த ஆசிரியருக்கு ஒரு வாக்கியத்தில் நன்றி சொல்லுங்கள்."
+
+];
+
+let canvas=document.getElementById("wheel");
+let ctx=canvas.getContext("2d");
+
+let colors=["#ff7675","#74b9ff","#55efc4","#ffeaa7","#a29bfe","#fab1a0","#fd79a8","#00cec9","#6c5ce7","#00b894","#e17055"];
+
+let rotation=0;
+
+function drawWheel(){
+
+ctx.clearRect(0,0,500,500);
+
+let angle = 2*Math.PI/staff.length;
+
+for(let i=0;i<staff.length;i++){
+
+let start = i*angle;
+let end = start + angle;
+
+ctx.beginPath();
+ctx.moveTo(250,250);
+ctx.fillStyle = colors[i % colors.length];
+ctx.arc(250,250,250,start,end);
+ctx.fill();
+
+ctx.save();
+ctx.translate(250,250);
+ctx.rotate(start + angle/2);
+
+ctx.fillStyle="black";
+ctx.font="bold 14px Arial";
+ctx.textAlign="right";
+
+ctx.fillText(staff[i].name,220,5);
+
+ctx.restore();
+
+}
+
+}
+
+drawWheel();
+
+function confetti(){
+
+for(let i=0;i<120;i++){
+
+let div=document.createElement("div");
+
+div.className="confetti";
+
+div.style.left=Math.random()*100+"vw";
+
+div.style.background=["red","blue","yellow","green","purple"][Math.floor(Math.random()*5)];
+
+document.body.appendChild(div);
+
+setTimeout(()=>div.remove(),3000);
+
+}
+
+}
+
+function spin(){
+
+if(staff.length===0){
+document.getElementById("result").innerHTML="All Staff Completed 🎉";
+return;
+}
+
+document.getElementById("spinSound").play();
+
+let staffIndex=Math.floor(Math.random()*staff.length);
+let questionIndex=Math.floor(Math.random()*questions.length);
+
+let selectedStaff=staff[staffIndex];
+let selectedQuestion=questions[questionIndex];
+
+let segment=360/staff.length;
+
+rotation += 360*6 - staffIndex*segment;
+
+canvas.style.transform="rotate("+rotation+"deg)";
+
+setTimeout(()=>{
+
+document.getElementById("result").innerHTML=
+
+"<img src='"+selectedStaff.photo+"'><br>"+
+"<b>"+selectedStaff.name+"</b><br><br>"+
+selectedQuestion;
+
+staff.splice(staffIndex,1);
+questions.splice(questionIndex,1);
+
+drawWheel();
+confetti();
+
+},5000);
+
+}
+
+</script>
+
+</body>
+</html>
